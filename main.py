@@ -6,6 +6,7 @@ from router.manageRuleRouter import manageRuleRouter
 from router.llmChatRouter import llmChatRouter
 from tortoise.contrib.fastapi import register_tortoise
 from config.ORMconfig import TORTOISE_ORM
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -24,6 +25,16 @@ async def CORS(request: Request, call_next):
     response = await call_next(request)
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
+
+
+# 使用FastAPI的CORSMiddleware，它会处理所有CORS相关的头信息
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有源，可以改为特定域名列表
+    allow_credentials=True,  # 允许携带凭证
+    allow_methods=["*"],  # 允许所有HTTP方法
+    allow_headers=["*"],  # 允许所有HTTP头
+)
 
 
 app.include_router(ruleRouter, prefix="/rule/upload", tags=["稽核规则导入的相关接口"])

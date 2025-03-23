@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "大模型数据稽核需求回复格式",
+  "description": "用于格式化大模型对数据稽核需求的回复，包含确认状态和需求内容",
+  "type": "object",
+  "required": ["is_clear", "middle_request", "final_request"],
+  "properties": {
+    "is_clear": {
+      "type": "boolean",
+      "description": "判断用户数据稽核需求是否得到了确认",
+      "enum": [true, false]
+    },
+    "middle_request": {
+      "type": ["string", "null"],
+      "description": "在用户需求没有被明确之前，用于存储LLM翻译的数据稽核需求"
+    },
+    "final_request": {
+      "type": ["string", "null"],
+      "description": "用于存放最终确认的数据稽核需求，仅在is_clear为true时有实际内容"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": { "is_clear": { "const": false } }
+      },
+      "then": {
+        "properties": {
+          "final_request": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "is_clear": { "const": true } }
+      },
+      "then": {
+        "properties": {
+          "final_request": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  ]
+}

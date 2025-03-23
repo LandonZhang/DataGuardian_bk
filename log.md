@@ -53,8 +53,10 @@
 
 ### 今日待完成任务
 
-- [ ] 完成系统大模型基本框架的搭建
-- [ ] 完成聊天接口的实现（详细知识库之后再完善）
+- [x] 完成系统大模型基本框架的搭建（规则检索部分，代码生成与执行部分看情况）
+- [x] 完成规则检索部分聊天接口的实现（详细知识库之后再完善）
+- [ ] 注意聊天记录的保持问题 (未解决😿)
+- [x] 录制视频给喻老师汇报阶段性成果
 
 ### 思考
 
@@ -62,3 +64,30 @@
 
 - 可以给出最匹配的n条记录，供大模型进行需求总结再和用户进行需求确认
 - ==系统得做一个界面供用户上传或者调整业务逻辑或者数据库描述==
+
+规则检索最终返回格式示例（解析之后去数据库中查询）：
+
+```json
+{
+  "success": true,
+  "tables": [
+    {
+      "table_name": "user_transactions",
+      "fields": ["transaction_id", "user_id", "amount", "transaction_date"],
+      "relevance_reason": "包含用户交易信息，与资金流动稽核相关"
+    },
+    {
+      "table_name": "account_balances",
+      "fields": ["account_id", "balance", "last_updated"],
+      "relevance_reason": "包含账户余额信息，用于验证交易后余额正确性"
+    },
+    {
+      "table_name": "audit_logs",
+      "fields": ["log_id", "operation_type", "entity_id", "created_by"],
+      "relevance_reason": "记录系统操作日志，可追踪谁执行了余额变更操作"
+    }
+  ],
+  "error_message": null
+}
+```
+
