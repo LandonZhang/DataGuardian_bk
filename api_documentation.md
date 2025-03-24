@@ -83,6 +83,14 @@
 
 **请求方式**：`GET`
 
+**示例URL**：
+
+```
+http://127.0.0.1:8080/rule/search/project
+```
+
+---
+
 **响应格式**：`JSON`
 
 **响应参数**：
@@ -109,11 +117,25 @@
 
 **请求参数**：
 
-| 参数名       | 类型   | 是否必须 | 说明             |
-| ------------ | ------ | -------- | ---------------- |
-| project_name | string | 否       | 项目名称筛选条件 |
+| 参数名       | 类型         | 是否必须 | 说明             |
+| ------------ | ------------ | -------- | ---------------- |
+| project_name | List[string] | 否       | 项目名称筛选条件 |
 
 **响应格式**：`JSON`
+
+**单个项目示例URL**：
+
+```
+http://127.0.0.1:8080/rule/search/table?project_name=测试项目1
+```
+
+**多个项目示例URL**：
+
+```
+http://127.0.0.1:8080/rule/search/table?project_name=测试项目1&project_name=测试项目2
+```
+
+---
 
 **响应参数**：
 
@@ -139,10 +161,24 @@
 
 **请求参数**：
 
-| 参数名       | 类型   | 是否必须 | 说明             |
-| ------------ | ------ | -------- | ---------------- |
-| project_name | string | 否       | 项目名称筛选条件 |
-| table_name   | string | 否       | 表格名称筛选条件 |
+| 参数名       | 类型         | 是否必须 | 说明             |
+| ------------ | ------------ | -------- | ---------------- |
+| project_name | List[string] | 否       | 项目名称筛选条件 |
+| table_name   | List[string] | 否       | 表格名称筛选条件 |
+
+**单个项目和表格示例URL**：
+
+```
+http://127.0.0.1:8080/rule/search/feature?project_name=测试项目1&table_name=表格A
+```
+
+**多个项目和表格示例URL**：
+
+```
+http://127.0.0.1:8080/rule/search/feature?project_name=测试项目1&project_name=测试项目2&table_name=表格A&table_name=表格B
+```
+
+---
 
 **响应格式**：`JSON`
 
@@ -179,6 +215,20 @@
 | end_time     | string  | 否       | 创建结束时间 (YYYY-MM-DD)   |
 | page         | integer | 否       | 页码，默认为1               |
 | page_size    | integer | 否       | 每页数量，默认为10，最大100 |
+
+**基本搜索示例URL**：
+
+```
+http://127.0.0.1:8080/rule/search/?project_name=测试项目1&table_name=表格A&page=1&page_size=20
+```
+
+**多条件组合搜索示例URL**：
+
+```
+http://127.0.0.1:8080/rule/search/?project_name=测试项目1&project_name=测试项目2&table_name=表格A&table_name=表格B&feature_name=特征X&start_time=2024-01-01&end_time=2024-03-24&page=2&page_size=15
+```
+
+---
 
 **响应格式**：`JSON`
 
@@ -252,11 +302,19 @@
 | page      | integer | 否       | 页码，默认为1               |
 | page_size | integer | 否       | 每页数量，默认为10，最大100 |
 
+**示例URL**：
+
+```
+http://127.0.0.1:8080/rule/search/reset?page=1&page_size=20
+```
+
+---
+
 **响应格式**：`JSON`
 
-**响应参数**： 与[搜索规则数据](https://claude.ai/chat/6d4e5eef-fe56-440d-8a81-27cb27877ca2#搜索规则数据)接口相同
+**响应参数**： 与==搜索规则数据==接口相同
 
-**响应示例**： 与[搜索规则数据](https://claude.ai/chat/6d4e5eef-fe56-440d-8a81-27cb27877ca2#搜索规则数据)接口相同
+**响应示例**： 与==搜索规则数据==接口相同
 
 **错误码说明**：
 

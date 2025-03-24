@@ -63,10 +63,17 @@ async def upload_rule_file(file: UploadFile = File(...)):
         df = pd.read_excel(await file.read())
 
         # 打印df的列名
-        print(df.columns)
+        # print(df.columns)
 
         # 验证必要的列是否存在
-        required_columns = ["项目名称", "表格名称", "特征名称", "对应规则", "错误类型"]
+        required_columns = [
+            "项目名称",
+            "表格名称",
+            "特征名称",
+            "对应规则",
+            "错误类型",
+            "所属域类",
+        ]
         missing_columns = [col for col in required_columns if col not in df.columns]
         print(missing_columns)
         if missing_columns:
@@ -101,6 +108,7 @@ async def upload_rule_file(file: UploadFile = File(...)):
                     issue_details=str(row["问题详情"])
                     if "问题详情" in df.columns and not pd.isna(row["问题详情"])
                     else None,
+                    class_name=str(row["所属域类"]),
                 )
                 success_count += 1
 

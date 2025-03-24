@@ -11,6 +11,9 @@ class RuleData(Model):
     rule_content = fields.CharField(max_length=500, null=False, description="对应规则")
     error_type = fields.CharField(max_length=50, null=False, description="错误类型")
     issue_details = fields.TextField(null=True, description="问题详情")
+    class_name = fields.CharField(
+        max_length=100, null=False, description="所属域名", default=""
+    )
 
     created_at = fields.DatetimeField(auto_now_add=True, description="创建时间")
     updated_at = fields.DatetimeField(auto_now=True, description="更新时间")

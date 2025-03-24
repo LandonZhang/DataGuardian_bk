@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from typing import List, Optional
 from datetime import datetime, timedelta
 from pydantic import BaseModel
@@ -29,9 +29,9 @@ class DropdownResponse(BaseModel):
 
 # 搜索参数模型
 class SearchParams(BaseModel):
-    project_name: Optional[str] = None
-    table_name: Optional[str] = None
-    feature_name: Optional[str] = None
+    project_name: Optional[List[str]] = None
+    table_name: Optional[List[str]] = None
+    feature_name: Optional[List[str]] = None
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
 
@@ -79,12 +79,16 @@ async def get_project_options():
 @searchRuleRouter.get(
     "/table", summary="获取表格名称下拉选项", response_model=DropdownResponse
 )
-async def get_table_options(project_name: Optional[str] = None):
+async def get_table_options(
+    project_name: Optional[List[str]] = Query(
+        None, description="项目名称列表，支持多选"
+    ),
+):
     """
-    获取所有不重复的表格名称作为下拉选项，可以通过项目名称筛选
+    获取所有不重复的表格名称作为下拉选项，可以通过项目名称筛选(支持多选)
 
     Args:
-        project_name (Optional[str], optional): 项目名称筛选条件. Defaults to None.
+        project_name (Optional[List[str]], optional): 项目名称筛选条件列表. Defaults to None.
 
     Returns:
         DropdownResponse: 包含表格名称列表的响应对象
@@ -95,7 +99,7 @@ async def get_table_options(project_name: Optional[str] = None):
 
         # 如果提供了项目名称，添加过滤条件
         if project_name:
-            query = query.filter(project_name=project_name)
+            query = query.filter(project_name__in=project_name)
 
         # 获取唯一的表格名称
         tables = await query.distinct().values_list("table_name", flat=True)
@@ -109,14 +113,17 @@ async def get_table_options(project_name: Optional[str] = None):
     "/feature", summary="获取特征名称下拉选项", response_model=DropdownResponse
 )
 async def get_feature_options(
-    project_name: Optional[str] = None, table_name: Optional[str] = None
+    project_name: Optional[List[str]] = Query(
+        None, description="项目名称列表，支持多选"
+    ),
+    table_name: Optional[List[str]] = Query(None, description="表格名称列表，支持多选"),
 ):
     """
-    获取所有不重复的特征名称作为下拉选项，可以通过项目名称和表格名称筛选
+    获取所有不重复的特征名称作为下拉选项，可以通过项目名称和表格名称筛选(支持多选)
 
     Args:
-        project_name (Optional[str], optional): 项目名称筛选条件. Defaults to None.
-        table_name (Optional[str], optional): 表格名称筛选条件. Defaults to None.
+        project_name (Optional[List[str]], optional): 项目名称筛选条件列表. Defaults to None.
+        table_name (Optional[List[str]], optional): 表格名称筛选条件列表. Defaults to None.
 
     Returns:
         DropdownResponse: 包含特征名称列表的响应对象
@@ -127,9 +134,9 @@ async def get_feature_options(
 
         # 添加过滤条件
         if project_name:
-            query = query.filter(project_name=project_name)
+            query = query.filter(project_name__in=project_name)
         if table_name:
-            query = query.filter(table_name=table_name)
+            query = query.filter(table_name__in=table_name)
 
         # 获取唯一的特征名称
         features = await query.distinct().values_list("feature_name", flat=True)
@@ -141,9 +148,13 @@ async def get_feature_options(
 # 搜索接口，返回全部结果
 @searchRuleRouter.get("/", summary="搜索规则数据", response_model=SearchResponse)
 async def search_rules(
-    project_name: Optional[str] = Query(None, description="项目名称"),
-    table_name: Optional[str] = Query(None, description="表格名称"),
-    feature_name: Optional[str] = Query(None, description="特征名称"),
+    project_name: Optional[List[str]] = Query(
+        None, description="项目名称列表，支持多选"
+    ),
+    table_name: Optional[List[str]] = Query(None, description="表格名称列表，支持多选"),
+    feature_name: Optional[List[str]] = Query(
+        None, description="特征名称列表，支持多选"
+    ),
     start_time: Optional[str] = Query(None, description="创建开始时间 (YYYY-MM-DD)"),
     end_time: Optional[str] = Query(None, description="创建结束时间 (YYYY-MM-DD)"),
     page: int = Query(1, description="页码", ge=1),
@@ -153,9 +164,9 @@ async def search_rules(
     根据条件搜索规则数据
 
     Args:
-        project_name: 项目名称筛选条件
-        table_name: 表格名称筛选条件
-        feature_name: 特征名称筛选条件
+        project_name: 项目名称筛选条件列表，支持多选
+        table_name: 表格名称筛选条件列表，支持多选
+        feature_name: 特征名称筛选条件列表，支持多选
         start_time: 创建开始日期
         end_time: 创建结束日期
         page: 页码（从1开始）
@@ -170,11 +181,11 @@ async def search_rules(
 
         # 添加过滤条件
         if project_name:
-            query = query.filter(project_name=project_name)
+            query = query.filter(project_name__in=project_name)
         if table_name:
-            query = query.filter(table_name=table_name)
+            query = query.filter(table_name__in=table_name)
         if feature_name:
-            query = query.filter(feature_name=feature_name)
+            query = query.filter(feature_name__in=feature_name)
 
         # 处理日期筛选条件
         if start_time:
