@@ -25,3 +25,19 @@ class RuleData(Model):
     # 调试函数，打印模型实例信息时使用
     def __str__(self):
         return f"{self.project_name} - {self.table_name} - {self.feature_name}"
+
+
+# 需求确认记录表
+class RequestConfirmation(Model):
+    id = fields.IntField(pk=True)
+    uid = fields.CharField(max_length=100, null=False, index=True, description="用户ID")
+    init_request = fields.TextField(null=False, description="初始请求")
+    final_request = fields.TextField(null=False, description="最终确认请求")
+    created_at = fields.DatetimeField(auto_now_add=True, description="创建时间")
+
+    class Meta:  # type: ignore
+        table = "request_confirmation"
+        table_description = "需求确认记录表"
+
+    def __str__(self):
+        return f"用户 {self.uid} 的需求确认记录 ID: {self.id}"

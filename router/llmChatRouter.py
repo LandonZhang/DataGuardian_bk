@@ -7,7 +7,17 @@ import os
 import json
 import uuid
 from datetime import datetime
-import asyncio
+from pathlib import Path as PathLib
+import sys
+import re
+
+# 获取当前文件的目录
+god_path = PathLib(__file__).parent.parent
+# 获取模型文件的路径
+model_path = os.path.join(god_path, "models")
+sys.path.append(model_path)
+
+from models import RequestConfirmation  # type: ignore
 
 # 创建一个APIRouter实例
 llmChatRouter = APIRouter()
@@ -26,9 +36,10 @@ else:
         "DIFY_API_URL", "https://api.dify.ai/v1/chat-messages"
     )
 
-# 内存中存储用户的对话ID映射
-# * 后续考虑使用Redis或数据库持久化存储
+# 内存中存储用户的对话ID映射 (用户名与对应的对话ID)
 user_conversations = {}
+
+# * 如果做一个用户多端对话的话可以考虑使用Redis需求用户ID与对话ID的映射
 
 
 # 聊天请求模型
@@ -213,7 +224,7 @@ async def chat_stream(request: ChatRequest = Body(...)):
 
 
 # 聊天接口 - 完整响应（非流式）
-@llmChatRouter.post("", summary="与大模型对话(完整响应)")
+@llmChatRouter.post("/", summary="与大模型对话(完整响应)")
 async def chat_complete(request: ChatRequest = Body(...)):
     """
     与大模型进行对话，返回完整的回答
@@ -264,10 +275,44 @@ async def chat_complete(request: ChatRequest = Body(...)):
             # 获取返回的对话ID并更新存储
             if result.get("conversation_id"):
                 update_conversation_id(request.user, result["conversation_id"])
+            answer = result.get("answer", "")
+
+            # 检查是否为"数据稽核开始"请求，需要从固定格式文本中提取信息并保存
+            if request.query == "数据稽核开始" and "需求保存完成！" in answer:
+                try:
+                    # 使用正则表达式从文本中提取初始请求和最终确认请求
+                    init_request_match = re.search(
+                        r"用户初始请求是：(.+?)(?=\n|$)", answer
+                    )
+                    final_request_match = re.search(
+                        r"最终确认请求是：(.+?)(?=\n|$)", answer
+                    )
+
+                    init_request = (
+                        init_request_match.group(1).strip()
+                        if init_request_match
+                        else ""
+                    )
+                    final_request = (
+                        final_request_match.group(1).strip()
+                        if final_request_match
+                        else ""
+                    )
+
+                    # 保存到数据库
+                    if init_request:
+                        await RequestConfirmation.create(
+                            uid=request.user,
+                            init_request=init_request,
+                            final_request=final_request,
+                        )
+                        print(f"已成功保存需求确认记录 - 用户ID: {request.user}")
+                except Exception as e:
+                    print(f"提取和保存需求确认数据时出错: {str(e)}")
 
             # 返回处理后的结果
             return {
-                "answer": result.get("answer", ""),
+                "answer": answer,
                 "conversation_id": result.get("conversation_id", ""),
                 "created_at": result.get("created_at", int(datetime.now().timestamp())),
                 "id": result.get("id", str(uuid.uuid4())),
