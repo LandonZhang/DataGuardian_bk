@@ -244,7 +244,7 @@ async def chat_complete(request: ChatRequest = Body(...)):
         # 构建请求数据
         dify_request = {
             "inputs": {},
-            "query": request.query,
+            "query": request.query,  # 后端需要在这里包装RequestHistory
             "response_mode": "blocking",  # 非流式模式
             "conversation_id": effective_conversation_id,
             "user": request.user,
@@ -276,6 +276,9 @@ async def chat_complete(request: ChatRequest = Body(...)):
             if result.get("conversation_id"):
                 update_conversation_id(request.user, result["conversation_id"])
             answer = result.get("answer", "")
+            # print(answer)
+            answer = answer.strip()
+            # print(answer)
 
             # 检查是否为"数据稽核开始"请求，需要从固定格式文本中提取信息并保存
             if request.query == "数据稽核开始" and "需求保存完成！" in answer:
@@ -307,6 +310,10 @@ async def chat_complete(request: ChatRequest = Body(...)):
                             final_request=final_request,
                         )
                         print(f"已成功保存需求确认记录 - 用户ID: {request.user}")
+
+                    # 如果请求是"数据稽核开始"，则需要从删除用户ID与对话ID的映射关系
+                    if request.query == "数据稽核开始":
+                        del user_conversations[request.user]
                 except Exception as e:
                     print(f"提取和保存需求确认数据时出错: {str(e)}")
 

@@ -12,6 +12,7 @@ models_path = os.path.join(god_path, "models")
 sys.path.append(models_path)
 
 # ORM系统配置
+# TODO: 需要开放为接口供用户配置数据库连接信息
 TORTOISE_ORM = {
     "connections": {
         "default": {

@@ -4,6 +4,7 @@ from router.ruleRouter import ruleRouter
 from router.searchRuleRouter import searchRuleRouter
 from router.manageRuleRouter import manageRuleRouter
 from router.llmChatRouter import llmChatRouter
+from router.linkDatabase import linkDatabaseRouter
 from tortoise.contrib.fastapi import register_tortoise
 from config.ORMconfig import TORTOISE_ORM
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,6 +46,9 @@ app.include_router(
     manageRuleRouter, prefix="/rule/manage", tags=["稽核规则管理的相关接口"]
 )
 app.include_router(llmChatRouter, prefix="/llm/chat", tags=["LLM 对话的相关接口"])
+app.include_router(
+    linkDatabaseRouter, prefix="/database/link", tags=["数据库连接的相关接口"]
+)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", port=8080, reload=True)

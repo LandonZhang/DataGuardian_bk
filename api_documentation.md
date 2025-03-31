@@ -2,6 +2,8 @@
 
 ---
 
+
+
 # 规则管理 API 文档
 
 ## 规则上传模块
@@ -727,5 +729,199 @@ data: {"event": "error", "message": "错误信息"}
 {
   "user": "user_67890",
   "conversation_id": "conv_abc123"
+}
+```
+
+# 数据库操作API文档
+
+## 数据库连接模块
+
+linkDatabaseRouter 的访问前缀是：`http://127.0.0.1:8080/database/link`
+
+### 连接MySQL数据库
+
+连接MySQL数据库并保存连接配置。
+
+**请求URL**：`http://127.0.0.1:8080/database/link/`
+
+**请求方式**：`POST`
+
+**请求体**：
+
+```json
+{
+  "host": "localhost",
+  "port": 3306,
+  "user": "root",
+  "password": "123456",
+  "database": "test_db",
+  "charset": "utf8mb4"
+}
+```
+
+**请求参数说明**：
+
+| 参数名   | 类型    | 是否必须 | 说明                   |
+| -------- | ------- | -------- | ---------------------- |
+| host     | string  | 是       | 数据库主机地址         |
+| port     | integer | 否       | 数据库端口，默认为3306 |
+| user     | string  | 是       | 数据库用户名           |
+| password | string  | 是       | 数据库密码             |
+| database | string  | 是       | 数据库名称             |
+| charset  | string  | 否       | 字符集，默认为utf8mb4  |
+
+**响应格式**：`JSON`
+
+**响应参数**：
+
+| 参数名          | 类型        | 说明                      |
+| --------------- | ----------- | ------------------------- |
+| status          | string      | 操作状态，成功为"success" |
+| message         | string      | 操作结果信息              |
+| connection_info | object/null | 连接成功时返回的连接信息  |
+
+**响应示例**：
+
+```json
+{
+  "status": "success",
+  "message": "成功连接到数据库",
+  "connection_info": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "database": "test_db",
+    "charset": "utf8mb4"
+  }
+}
+```
+
+**错误码说明**：
+
+- 400: 无法连接到数据库，请检查连接参数是否正确
+- 500: 处理数据库连接请求时出错
+
+### 测试MySQL数据库连接
+
+测试MySQL数据库连接，但不保存配置，用户可以先测试，成功后再保存。
+
+**请求URL**：`http://127.0.0.1:8080/database/link/test`
+
+**请求方式**：`POST`
+
+**请求体**：
+
+```json
+{
+  "host": "localhost",
+  "port": 3306,
+  "user": "root",
+  "password": "123456",
+  "database": "test_db",
+  "charset": "utf8mb4"
+}
+```
+
+**请求参数说明**：
+
+| 参数名   | 类型    | 是否必须 | 说明                   |
+| -------- | ------- | -------- | ---------------------- |
+| host     | string  | 是       | 数据库主机地址         |
+| port     | integer | 否       | 数据库端口，默认为3306 |
+| user     | string  | 是       | 数据库用户名           |
+| password | string  | 是       | 数据库密码             |
+| database | string  | 是       | 数据库名称             |
+| charset  | string  | 否       | 字符集，默认为utf8mb4  |
+
+**响应格式**：`JSON`
+
+**响应参数**：
+
+| 参数名          | 类型        | 说明                         |
+| --------------- | ----------- | ---------------------------- |
+| status          | string      | 操作状态，"success"或"error" |
+| message         | string      | 操作结果信息                 |
+| connection_info | object/null | 连接成功时返回的连接信息     |
+
+**响应示例（成功）**：
+
+```json
+{
+  "status": "success",
+  "message": "数据库连接测试成功",
+  "connection_info": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "database": "test_db",
+    "charset": "utf8mb4"
+  }
+}
+```
+
+**响应示例（失败）**：
+
+```json
+{
+  "status": "error",
+  "message": "数据库连接测试失败，请检查连接参数",
+  "connection_info": null
+}
+```
+
+### 获取已保存的数据库配置
+
+获取已保存的数据库配置信息，便于用户下次登录时直接显示已保存信息。
+
+**请求URL**：`http://127.0.0.1:8080/database/link/config`
+
+**请求方式**：`GET`
+
+**响应格式**：`JSON`
+
+**响应参数**：
+
+| 参数名  | 类型        | 说明                                 |
+| ------- | ----------- | ------------------------------------ |
+| status  | string      | 操作状态，"success"、"info"或"error" |
+| message | string      | 操作结果信息                         |
+| config  | object/null | 已保存的数据库配置信息               |
+
+**响应示例（配置存在）**：
+
+```json
+{
+  "status": "success",
+  "message": "成功获取保存的数据库配置",
+  "config": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "123456",
+    "database": "test_db",
+    "charset": "utf8mb4"
+  }
+}
+```
+
+password 前端可以考虑加密成: “****”, 让用户选择是否显示。
+
+**响应示例（配置不存在）**：
+
+```json
+{
+  "status": "info",
+  "message": "未找到保存的数据库配置",
+  "config": null
+}
+```
+
+**响应示例（出错）**：
+
+```json
+{
+  "status": "error",
+  "message": "获取数据库配置时出错: 详细错误信息",
+  "config": null
 }
 ```
