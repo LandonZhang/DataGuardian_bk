@@ -904,7 +904,7 @@ linkDatabaseRouter 的访问前缀是：`http://127.0.0.1:8080/database/link`
 }
 ```
 
-password 前端可以考虑加密成: “****”, 让用户选择是否显示。
+password 前端可以考虑加密成星号, 让用户选择是否显示。
 
 **响应示例（配置不存在）**：
 

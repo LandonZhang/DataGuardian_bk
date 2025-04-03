@@ -24,7 +24,6 @@ llmChatRouter = APIRouter()
 
 # Dify API配置
 testMode = True
-
 if testMode:
     DIFY_API_KEY = os.environ.get("DIFY_API_KEY", "app-lHz8NmEHEZRFecdEVelninyt")
     DIFY_API_URL = os.environ.get(
@@ -236,11 +235,13 @@ async def chat_complete(request: ChatRequest = Body(...)):
         完整的响应内容
     """
     try:
+        # print("开始处理完整响应请求")
         # 获取正确的对话ID
         effective_conversation_id = get_conversation_id(
             request.user, request.conversation_id
         )
-
+        # print(f"获取到的对话ID: {effective_conversation_id}")
+        # print(f"请求体的数据是: {request.model_dump()}")
         # 构建请求数据
         dify_request = {
             "inputs": {},
@@ -249,19 +250,21 @@ async def chat_complete(request: ChatRequest = Body(...)):
             "conversation_id": effective_conversation_id,
             "user": request.user,
         }
+        # print(f"构建的请求数据是: {dify_request}")
 
         # 设置请求头
         headers = {
             "Authorization": f"Bearer {DIFY_API_KEY}",
             "Content-Type": "application/json",
         }
+        # print(f"设置的请求头是: {headers}")
 
-        # 发送请求到Dify
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False, timeout=60.0) as client:
+            # print(f"发送请求到Dify的请求是: {DIFY_API_URL}")
             response = await client.post(
                 DIFY_API_URL, json=dify_request, headers=headers, timeout=60.0
             )
-
+            # print(f"发送请求到Dify的响应是: {response}")
             # 检查响应状态
             if response.status_code != 200:
                 raise HTTPException(
